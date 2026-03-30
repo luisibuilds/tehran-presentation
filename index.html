@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEHERANI — KRYEQYTETI I IRANIT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,900;1,400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0A0A0A;
+            --bg-cell: #121212;
+            --fg: #EAEAEA;
+            --fg-dim: #6A6A6A;
+            --red: #E61919;
+            --border: #2A2A2A;
+            --border-heavy: #3A3A3A;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+
+        /* NOISE + SCANLINES */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.08) 2px,
+                rgba(0,0,0,0.08) 4px
+            );
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 256px;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
+        }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 3px 0;
+        }
+
+        nav a .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--border-heavy);
+            transition: all 0.2s;
+        }
+
+        nav a.active .dot,
+        nav a:hover .dot {
+            background: var(--red);
+            box-shadow: 0 0 8px rgba(230, 25, 25, 0.5);
+        }
+
+        nav a .tag {
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--fg-dim);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        nav a:hover .tag,
+        nav a.active .tag {
+            opacity: 1;
+            color: var(--red);
+        }
+
+        /* SLIDE */
+        .slide {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 48px;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .slide-inner {
+            max-width: 1200px;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .slide-inner.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* SLIDE NUMBER - top left stamp */
+        .slide-id {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--fg-dim);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slide-id::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .slide-id .num {
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        /* MEGA HEADING */
+        .mega {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(3.5rem, 9vw, 10rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.04em;
+            line-height: 0.88;
+            color: var(--fg);
+        }
+
+        .mega .red {
+            color: var(--red);
+        }
+
+        .mega .outline {
+            -webkit-text-stroke: 1.5px var(--fg);
+            color: transparent;
+        }
+
+        /* SECTION HEADING */
+        .section-title {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(2rem, 5vw, 4.5rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.03em;
+            line-height: 0.92;
+            color: var(--fg);
+            margin-bottom: 8px;
+        }
+
+        .section-title .red { color: var(--red); }
+
+        .section-sub {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--fg-dim);
+            margin-bottom: 32px;
+        }
+
+        /* HORIZONTAL RULE */
+        hr {
+            border: none;
+            height: 2px;
+            background: var(--red);
+            margin: 24px 0;
+        }
+
+        hr.thin {
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* META TEXT */
+        .meta {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--fg-dim);
+        }
+
+        .meta .red { color: var(--red); }
+
+        /* DATA TEXT */
+        p, .body-text {
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--fg);
+            max-width: 680px;
+        }
+
+        .dim { color: var(--fg-dim); }
+
+        strong, .highlight {
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        /* GRID CELLS */
+        .grid {
+            display: grid;
+            gap: 1px;
+            background: var(--border);
+        }
+
+        .grid > * {
+            background: var(--bg-cell);
+            padding: 28px;
+        }
+
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+        /* CELL */
+        .cell-label {
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--fg-dim);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .cell-value {
+            font-family: 'Inter', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--fg);
+            line-height: 1;
+        }
+
+        .cell-value.red { color: var(--red); }
+
+        .cell-detail {
+            font-size: 11px;
+            color: var(--fg-dim);
+            margin-top: 6px;
+        }
+
+        /* IMAGE */
+        .img-container {
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-cell);
+            border: 1px solid var(--border);
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: grayscale(60%) contrast(1.15);
+            transition: filter 0.4s;
+        }
+
+        .img-container:hover img {
+            filter: grayscale(20%) contrast(1.1);
+        }
+
+        .img-container .img-tag {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 14px;
+            background: rgba(10, 10, 10, 0.85);
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--fg-dim);
+            border-top: 1px solid var(--border);
+        }
+
+        .img-container .img-tag .red { color: var(--red); }
+
+        /* HALFTONE OVERLAY on images */
+        .img-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.3) 1px, transparent 1px);
+            background-size: 3px 3px;
+            mix-blend-mode: multiply;
+            opacity: 0.4;
+        }
+
+        /* HERO IMAGE */
+        .hero-img {
+            width: 100%;
+            height: 380px;
+        }
+
+        /* WIDE IMAGE */
+        .wide-img {
+            width: 100%;
+            height: 280px;
+        }
+
+        /* SMALL IMAGE */
+        .sm-img {
+            width: 100%;
+            height: 200px;
+        }
+
+        /* DATA ROW */
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .data-row:last-child { border-bottom: none; }
+
+        .data-row .key {
+            color: var(--fg-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 10px;
+        }
+
+        .data-row .val {
+            color: var(--fg);
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .data-row .val.red { color: var(--red); }
+
+        /* TIMELINE */
+        .tl {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tl-item {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 1px;
+            background: var(--border);
+        }
+
+        .tl-item + .tl-item { margin-top: 1px; }
+
+        .tl-date {
+            background: var(--bg);
+            padding: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--red);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .tl-content {
+            background: var(--bg-cell);
+            padding: 20px 24px;
+        }
+
+        .tl-content h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            color: var(--fg);
+            margin-bottom: 6px;
+        }
+
+        .tl-content p {
+            font-size: 12px;
+            color: var(--fg-dim);
+            line-height: 1.6;
+        }
+
+        /* BAR CHART */
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .bar-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 80px;
+            gap: 1px;
+            background: var(--border);
+        }
+
+        .bar-row > * { background: var(--bg-cell); }
+
+        .bar-year {
+            padding: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--fg-dim);
+            display: flex;
+            align-items: center;
+        }
+
+        .bar-track {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .bar-fill {
+            height: 24px;
+            background: var(--red);
+            width: 0;
+            transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+        }
+
+        .bar-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--fg);
+        }
+
+        .bar-val {
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--fg);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        /* PROBLEM BLOCK */
+        .prob {
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            gap: 1px;
+            background: var(--border);
+        }
+
+        .prob + .prob { margin-top: 1px; }
+
+        .prob-icon {
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            padding: 16px;
+        }
+
+        .prob-body {
+            background: var(--bg-cell);
+            padding: 16px 20px;
+        }
+
+        .prob-body h4 {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: var(--fg);
+            margin-bottom: 4px;
+        }
+
+        .prob-body p {
+            font-size: 11px;
+            color: var(--fg-dim);
+            line-height: 1.6;
+        }
+
+        /* MONUMENT CARD */
+        .mon-card {
+            background: var(--bg-cell);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .mon-card .mon-img {
+            height: 180px;
+        }
+
+        .mon-card .mon-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(60%) contrast(1.15);
+            display: block;
+            transition: filter 0.4s;
+        }
+
+        .mon-card:hover .mon-img img {
+            filter: grayscale(20%) contrast(1.1);
+        }
+
+        .mon-card .mon-img {
+            position: relative;
+        }
+
+        .mon-card .mon-img::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.3) 1px, transparent 1px);
+            background-size: 3px 3px;
+            mix-blend-mode: multiply;
+            opacity: 0.4;
+        }
+
+        .mon-info {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .mon-info .mon-year {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--red);
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .mon-info h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            color: var(--fg);
+            margin-bottom: 8px;
+        }
+
+        .mon-info p {
+            font-size: 11px;
+            color: var(--fg-dim);
+            line-height: 1.6;
+        }
+
+        /* CONCLUSION */
+        .conc-list {
+            counter-reset: conc;
+        }
+
+        .conc-item {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            gap: 1px;
+            background: var(--border);
+            counter-increment: conc;
+        }
+
+        .conc-item + .conc-item { margin-top: 1px; }
+
+        .conc-num {
+            background: var(--bg);
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--red);
+        }
+
+        .conc-num::before { content: counter(conc, decimal-leading-zero); }
+
+        .conc-text {
+            background: var(--bg-cell);
+            padding: 20px 24px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--fg);
+        }
+
+        .conc-text strong { color: var(--red); }
+
+        /* FINAL STAMP */
+        .stamp {
+            margin-top: 48px;
+            border: 2px solid var(--red);
+            padding: 32px;
+            text-align: center;
+            position: relative;
+        }
+
+        .stamp::before {
+            content: '[ FUND ]';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--bg);
+            padding: 0 10px;
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        .stamp p {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            color: var(--fg);
+            max-width: none;
+        }
+
+        /* SCROLL ARROW */
+        .scroll-arrow {
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--fg-dim);
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        .scroll-arrow span {
+            display: block;
+            color: var(--red);
+            font-size: 18px;
+            margin-top: 4px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+            50% { opacity: 1; transform: translateX(-50%) translateY(6px); }
+        }
+
+        /* SPACERS */
+        .gap-sm { margin-top: 16px; }
+        .gap-md { margin-top: 32px; }
+        .gap-lg { margin-top: 48px; }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+            .tl-item { grid-template-columns: 100px 1fr; }
+            .slide { padding: 48px 20px; }
+        }
+
+        @media (max-width: 600px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .tl-item { grid-template-columns: 1fr; }
+            .tl-date { padding: 12px 20px; }
+            nav { display: none; }
+            .hero-img { height: 240px; }
+            .bar-row { grid-template-columns: 50px 1fr 60px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+    <a href="#s1"><span class="tag">01 TITULL</span><span class="dot"></span></a>
+    <a href="#s2"><span class="tag">02 HISTORI</span><span class="dot"></span></a>
+    <a href="#s3"><span class="tag">03 GJEO</span><span class="dot"></span></a>
+    <a href="#s4"><span class="tag">04 ZHVILLIM</span><span class="dot"></span></a>
+    <a href="#s5"><span class="tag">05 ARKIT</span><span class="dot"></span></a>
+    <a href="#s6"><span class="tag">06 EKONOMI</span><span class="dot"></span></a>
+    <a href="#s7"><span class="tag">07 DEMOGRAFI</span><span class="dot"></span></a>
+    <a href="#s8"><span class="tag">08 PROBLEME</span><span class="dot"></span></a>
+    <a href="#s9"><span class="tag">09 FUND</span><span class="dot"></span></a>
+</nav>
+
+<!-- ============================================ -->
+<!-- SLIDE 01 — TITLE -->
+<!-- ============================================ -->
+<section class="slide" id="s1">
+    <div class="slide-inner">
+        <div class="meta" style="margin-bottom: 32px;">[ PREZANTIM GJEOGRAFIE ] &nbsp; /// &nbsp; <span class="red">UNIT 12-1</span> &nbsp; /// &nbsp; REV 2026</div>
+        <div class="mega">
+            TEHERAN<span class="red">I</span>
+        </div>
+        <div class="mega outline" style="font-size: clamp(1.8rem, 4vw, 4rem); margin-top: 8px;">
+            KRYEQYTETI I IRANIT
+        </div>
+        <hr>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); margin-top: 24px;">
+            <div style="background: var(--bg-cell); padding: 14px 20px;">
+                <span class="meta">AUTOR</span>
+                <div style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14px; margin-top: 4px; text-transform: uppercase;">Luis Lekaj</div>
+            </div>
+            <div style="background: var(--bg-cell); padding: 14px 20px;">
+                <span class="meta">KLASA</span>
+                <div style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14px; margin-top: 4px; text-transform: uppercase;">12-1</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 1px; background: var(--border); margin-top: 32px;">
+            <div class="img-container" style="height: 340px; border: none;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Azadi_Tower_%2829358497718%29.jpg/800px-Azadi_Tower_%2829358497718%29.jpg" alt="Kulla Azadi, Teheran">
+                <span class="img-tag"><span class="red">///</span> KULLA AZADI &mdash; TEHERAN, IRAN &nbsp; <span class="red">35.6996&deg;N 51.3381&deg;E</span></span>
+            </div>
+            <div style="background: var(--bg-cell); display: flex; flex-direction: column; gap: 1px;">
+                <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px; border-bottom: 1px solid var(--border);">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/Flag_of_Iran.svg" alt="Flamuri i Iranit" style="width: 100%; max-width: 160px; display: block;">
+                </div>
+                <div style="flex: 1; position: relative; overflow: hidden;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Tehran_in_Iran.svg/800px-Tehran_in_Iran.svg.png" alt="Teherani ne harte" style="width: 100%; height: 100%; object-fit: contain; padding: 12px; filter: invert(0.85) hue-rotate(180deg) brightness(1.2);">
+                    <span style="position: absolute; bottom: 6px; left: 10px; font-size: 8px; letter-spacing: 2px; color: var(--fg-dim); text-transform: uppercase;"><span style="color: var(--red);">///</span> POZITA NE HARTE</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="scroll-arrow">ZBRIT <span>&#9660;</span></div>
+</section>
+
+<!-- ============================================ -->
+<!-- SLIDE 02 — HISTORY -->
+<!-- ============================================ -->
+<section class="slide" id="s2">
+    <div class="slide-inner">
+        <div class="slide-id"><span class="num">02</span> HISTORIKU I KRIJIMIT TE QYTETIT</div>
+        <div class="section-title">KRIJIMI I <span class="red">QYTETIT</span></div>
+        <div class="section-sub">[ RHAGES/RAY &mdash; TEHERAN ] /// HISTORI MBI 6,000 VJET</div>
+        <hr>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border);">
+            <div style="background: var(--bg-cell); padding: 0;">
+                <div class="img-container" style="height: 260px; border: none;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Gate_of_All_Nations%2C_Persepolis.jpg/800px-Gate_of_All_Nations%2C_Persepolis.jpg" alt="Persepolis - Porta e te Gjitha Kombeve">
+                    <span class="img-tag"><span class="red">///</span> RRENIMET ANTIKE &mdash; RHAGES</span>
+                </div>
+            </div>
+            <div style="background: var(--bg-cell); padding: 24px;">
+                <div class="data-row">
+                    <span class="key">VENDBANIMI I PARE</span>
+                    <span class="val red">6,000+ VJET</span>
+                </div>
+                <div class="data-row">
+                    <span class="key">STATUSI DERI SHEK. XVIII</span>
+                    <span class="val">QYTET RURAL I VOGEL</span>
+                </div>
+                <div class="data-row">
+                    <span class="key">KRYEQYTET NGA VITI</span>
+                    <span class="val red">1796</span>
+                </div>
+                <div class="data-row">
+                    <span class="key">DINASTIA</span>
+                    <span class="val">QAJAR</span>
+                </div>
+                <div class="data-row">
+                    <span class="key">NR. KRYEQYTET NE HISTORI</span>
+                    <span class="val red">I 32-TI</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: var(--bg-cell); border: 1px solid var(--border); padding: 20px; margin-top: 16px;">
+            <p style="font-size: 12px; color: var(--fg-dim);">
+                <strong>///</strong> Pozita gjeografike: ne jug te maleve Alborz, ne kryqezimin e rruges historike Lindje&ndash;Perendim <strong>(Rruga e Mendafshit)</strong>. Kjo pozite strategjike e beri Teheranin nje nyjë te rendesishme tregtare per mijera vjet.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================ -->
+<!-- SLIDE 03 — GEOGRAPHY -->
+<!-- ============================================ -->
+<section class="slide" id="s3">
+    <div class="slide-inner">
+        <div class="slide-id"><span class="num">03</span> SIPERFAQJA HAPSINORE DHE GJEOGRAFIA</div>
+        <div class="section-title">GJEOGRAFI<span class="red">A</span></div>
+        <div class="section-sub">[ KOORDINATAT: 35.6892&deg;N 51.3890&deg;E ] /// ALBORZ &mdash; JUG</div>
+        <hr>
+
+        <div class="grid grid-4 gap-sm">
+            <div>
+                <span class="cell-label">SIPERFAQJA</span>
+                <div class="cell-value red">~1,700</div>
+                <div class="cell-detail">KM&sup2;</div>
+            </div>
+            <div>
+                <span class="cell-label">LARTESIA / JUG</span>
+                <div class="cell-value">1,100</div>
+                <div class="cell-detail">METRA MBI DETE</div>
+            </div>
+            <div>
+                <span class="cell-label">LARTESIA / VERI</span>
+                <div class="cell-value">1,800</div>
+                <div class="cell-detail">METRA MBI DETE</div>
+            </div>
+            <div>
+                <span class="cell-label">KLIMA</span>
+                <div class="cell-value" style="font-size: 22px;">ARIDE</div>
+                <div class="cell-detail">GJYSME-ARIDE E FTOHTE</div>
+            </div>
+        </div>
+
+        <div class="img-container wide-img gap-md">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Tehran_skyline-_Alborz_Mountains_on_background-20150401.jpg/800px-Tehran_skyline-_Alborz_Mountains_on_background-20150401.jpg" alt="Malet Alborz mbi Teheranin">
+            <span class="img-tag"><span class="red">///</span> MALET ALBORZ &mdash; VERI I TEHERANIT &nbsp; <span class="red">ELEV. 5,610M DAMAVAND</span></span>
+        </div>
+
+        <div class="grid grid-2 gap-sm">
+            <div>
+                <span class="cell-label">[ TERRENI ]</span>
+                <p style="font-size: 12px; color: var(--fg-dim); margin-top: 8px;">I pjerret ne veri (malet Alborz), i sheshte ne jug. Vere e nxehte dhe e thate, dimer me bore ne zonat veriore.</p>
+            </div>
+            <div>
+                <span class="cell-label">[ POZITA STRATEGJIKE ]</span>
+                <p style="font-size: 12px; color: var(--fg-dim); margin-top: 8px;">Lidhese mes Azise Qendrore dhe Lindjes se Mesme &mdash; ne kryqezimin e rrugeve tregtare historike qe lidhin Lindjen me Perendimin.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================ -->
+<!-- SLIDE 04 — DEVELOPMENT -->
+<!-- ============================================ -->
+<section class="slide" id="s4">
+    <div class="slide-inner">
+        <div class="slide-id"><span class="num">04</span> FAZAT E ZHVILLIMIT TE QYTETIT</div>
+        <div class="section-title">ZHVILLIMI <span class="red">URBAN</span></div>
+        <div class="section-sub">[ KRONOLOGJI ] /// PARA SHEK. XIX &mdash; SOT 2026</div>
+        <hr>
+
+        <div class="tl gap-sm">
+            <div class="tl-item">
+                <div class="tl-date">PARA SHEK. XIX</div>
+                <div class="tl-content">
+                    <h3>FSHAT I VOGEL</h3>
+                    <p>Bazaar tradicional, popullsi e vogel, ekonomi bujqesore. Teherani nje fshat i panjohur ne hijen e Rhages.</p>
+                </div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-date">1796 &ndash; 1925</div>
+                <div class="tl-content">
+                    <h3>DINASTIA QAJAR</h3>
+                    <p>Kryeqytet i ri. Ndertim pallatesh si Golestan dhe Niavaran. Formesimi i strukturave qeveritare dhe monarkike.</p>
+                </div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-date">1925 &ndash; 1979</div>
+                <div class="tl-content">
+                    <h3>MODERNIZIMI PERENDIMOR</h3>
+                    <p>Rruge te gjera zevendesojne lagjet e vjetra. Akti i zgjerimit rrugor <strong>(1933)</strong>. Shembja e mureve te vjetra te qytetit <strong>(1937)</strong>.</p>
+                </div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-date">PAS 1979</div>
+                <div class="tl-content">
+                    <h3>REVOLUCIONI ISLAMIK</h3>
+                    <p>Politika te reja urbane, rritje e shpejte e popullsise, zgjerim i pakontrolluar i zones metropolitane.</p>
+                </div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-date">SOT /// 2026</div>
+                <div class="tl-content">
+                    <h3>METROPOL MODERN</h3>
+                    <p>Mbi <strong>9.8 milion</strong> banore &mdash; nje nga megaqytetet me te medha te Lindjes se Mesme.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================ -->
+<!-- SLIDE 05 — ARCHITECTURE -->
+<!-- ============================================ -->
+<section class="slide" id="s5">
+    <div class="slide-inner">
+        <div class="slide-id"><span class="num">05</span> ARKITEKTURA DHE MODELI URBAN</div>
+        <div class="section-title">ARKITEKTUR<span class="red">A</span></div>
+        <div class="section-sub">[ VERI = MODERN / JUG = TRADICIONAL ] /// BOSHTI VERI&ndash;JUG + RRJETE RADIALE</div>
+        <hr>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;" class="gap-sm">
+            <!-- Azadi Tower -->
+            <div class="mon-card">
+                <div class="mon-img">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Azadi_Tower_%2829358497718%29.jpg/800px-Azadi_Tower_%2829358497718%29.jpg" alt="Kulla Azadi">
+                </div>
+                <div class="mon-info">
+                    <span class="mon-year">/// 1971</span>
+                    <h3>KULLA AZADI</h3>
+                    <p>Simbol i qytetit, 45m e larte. Ndertuar per 2500-vjetorin e Perandorise Persiane.</p>
+                </div>
+            </div>
+            <!-- Milad Tower -->
+            <div class="mon-card">
+                <div class="mon-img">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/7/77/Milad_Tower_in_2023.jpg" alt="Kulla Milad">
+                </div>
+                <div class="mon-info">
+                    <span class="mon-year">/// 2007</span>
+                    <h3>KULLA MILAD</h3>
+                    <p>E 6-ta me e larte ne bote. Qender telekomunikacioni me restorant rrotullues.</p>
+                </div>
+            </div>
+            <!-- Tabiat Bridge -->
+            <div class="mon-card">
+                <div class="mon-img">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/A_view_of_Tabiat-01.jpg/800px-A_view_of_Tabiat-01.jpg" alt="Ura Tabiat">
+                </div>
+                <div class="mon-info">
+                    <span class="mon-year">/// 2014</span>
+                    <h3>URA TABIAT</h3>
+                    <p>Ure moderne ikonike qe lidh dy parqe publike &mdash; simbol i Teheranit te ri.</p>
+                </div>
+            </div>
+            <!-- Golestan Palace -->
+            <div class="mon-card">
+                <div class="mon-img">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Palais_du_Golestan%2C_T%C3%A9h%C3%A9ran_%285%29.jpg/800px-Palais_du_Golestan%2C_T%C3%A9h%C3%A9ran_%285%29.jpg" alt="Pallati Golestan">
+                </div>
+                <div class="mon-info">
+                    <span class="mon-year">/// EPOKA QAJAR</span>
+                    <h3>PALLATI GOLESTAN</h3>
+                    <p>Trashegimi UNESCO. Kompleks i arkitektures se lashte persiane.</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); margin-top: 16px;">
+            <div class="img-container" style="height: 200px; border: none;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Grand_Bazaar%2C_Tehran_bb.jpg/800px-Grand_Bazaar%2C_Tehran_bb.jpg" alt="Bazaar i Teheranit">
+                <span class="img-tag"><span class="red">///</span> BAZAAR I TEHERANIT</span>
+            </div>
+            <div style="background: var(--bg-cell); padding: 24px; display: flex; flex-direction: column; justify-content: center;">
+                <span class="cell-label">[ BAZAAR I TEHERANIT ]</span>
+                <p style="font-size: 12px; color: var(--fg-dim); margin-top: 8px;">Kilometra te tera rrugesh te mbuluara, hallall, xhami, karavansaraje &mdash; qendra ekonomike dhe sociale e qytetit qe prej shekujsh. Nje nga bazaaret me te medha dhe me te vjetra ne bote.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================ -->
+<!-- SLIDE 06 — ECONOMY -->
+<!-- ============================================ -->
+<section class="slide" id="s6">
+    <div class="slide-inner">
+        <div class="slide-id"><span class="num">06</span> AKTIVITETET SOCIAL-EKONOMIKE</div>
+        <div class="section-title">EKONOMI<span class="red">A</span></div>
+        <div class="section-sub">[ QENDRA KRYESORE EKONOMIKE E IRANIT ] /// GDP URBAN &mdash; TOP 56</div>
+        <hr>
+
+        <div class="grid grid-2 gap-sm">
+            <div>
+                <span class="cell-label">[ NAFTA ]</span>
+                <div class="cell-value red" style="font-size: 48px;">4/5</div>
+                <div class="cell-detail">E TE ARDHURAVE NGA EKSPORTI I HUAJ KONTROLLOHET NGA INDUSTRIA E NAFTES</div>
+            </div>
+            <div>
+                <span class="cell-label">[ RENDITJA GLOBALE ]</span>
+                <div class="cell-value" style="font-size: 48px;">56</div>
+                <div class="cell-detail">NDER QYTETET E PARA TE BOTES SIPAS GDP-SE URBANE</div>
+            </div>
+        </div>
+
+        <div class="grid grid-3 gap-sm" style="margin-top: 1px;">
+            <div>
+                <span class="cell-label">SEKTORI PUBLIK</span>
+                <p style="font-size: 12px; color: var(--fg-dim); margin-top: 8px;">Sektori publik i madh + industria perpunuese + sherbimet dominojne ekonomine e qytetit.</p>
+            </div>
+            <div>
+                <span class="cell-label">BURSA FINANCIARE</span>
+                <p style="font-size: 12px; color: var(--fg-dim); margin-top: 8px;">Burse e fuqishme financiare ne Teheran &mdash; qendra e tregtise se aksioneve per gjithe Iranin.</p>
+            </div>
+            <div>
+                <span class="cell-label">TURIZMI KULTUROR</span>
+                <p style="font-size: 12px; color: var(--fg-dim); margin-top: 8px;">Pallate, muze, arkitekture historike &mdash; bazaari historik mbetet aktiv ekonomikisht.</p>
+            </div>
+        </div>
+
+        <div class="img-container wide-img gap-md">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Tehran_panorama_in_winter.JPG/800px-Tehran_panorama_in_winter.JPG" alt="Panorame e Teheranit">
+            <span class="img-tag"><span class="red">///</span> PANORAME URBANE &mdash; TEHERAN &nbsp; <span class="red">DIST. FINANCIAR</span></span>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================ -->
+<!-- SLIDE 07 — DEMOGRAPHICS -->
+<!-- ============================================ -->
+<section class="slide" id="s7">
+    <div class="slide-inner">
+        <div class="slide-id"><span class="num">07</span> ECURIA E DEMOGRAFISE</div>
+        <div class="section-title">DEMOGRAFI<span class="red">A</span></div>
+        <div class="section-sub">[ POPULLSIA 1950&ndash;2026 ] /// RRITJE EKSPONENCIALE</div>
+        <hr>
+
+        <div class="bar-chart gap-sm" id="pop-chart">
+            <div class="bar-row">
+                <div class="bar-year">1950</div>
+                <div class="bar-track"><div class="bar-fill" data-width="10%"></div></div>
+                <div class="bar-val">~1M</div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-year">1976</div>
+                <div class="bar-track"><div class="bar-fill" data-width="46%"></div></div>
+                <div class="bar-val">4.5M</div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-year">2000</div>
+                <div class="bar-track"><div class="bar-fill" data-width="71%"></div></div>
+                <div class="bar-val">~7M</div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-year">2016</div>
+                <div class="bar-track"><div class="bar-fill" data-width="89%"></div></div>
+                <div class="bar-val">8.73M</div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-year">2026</div>
+                <div class="bar-track"><div class="bar-fill" data-width="100%"></div></div>
+                <div class="bar-val red" style="color: var(--red);">~9.84M</div>
+            </div>
+        </div>
+
+        <div class="grid grid-3 gap-md">
+            <div>
+                <span class="cell-label">ZONA METROPOLITANE</span>
+                <div class="cell-value red">~16M</div>
+                <div class="cell-detail">BANORE NE TOTAL</div>
+            </div>
+            <div>
+                <span class="cell-label">MIGRIMI RURAL-URBAN</span>
+                <div class="cell-value">25%</div>
+                <div class="cell-detail">E POPULLSISE NE VITET 2000</div>
+            </div>
+            <div>
+                <span class="cell-label">ETNICITETI KRYESOR</span>
+                <div class="cell-value">75%</div>
+                <div class="cell-detail">PERSE &mdash; GJUHA: PERSISHT</div>
+            </div>
+        </div>
+
+        <div style="background: var(--bg-cell); border: 1px solid var(--border); padding: 16px 20px; margin-top: 16px;">
+            <p style="font-size: 11px; color: var(--fg-dim);"><strong>///</strong> Etnicitete te tjera: 10-15% Azerbajxhanas, Kurde, Armene, Arabe etj. 99% flasin Persisht. Islami feja kryesore.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================ -->
+<!-- SLIDE 08 — PROBLEMS -->
+<!-- ============================================ -->
+<section class="slide" id="s8">
+    <div class="slide-inner">
+        <div class="slide-id"><span class="num">08</span> PROBLEMET URBANE</div>
+        <div class="section-title">PROBLEM<span class="red">ET</span></div>
+        <div class="section-sub">[ SFIDA KRITIKE ] /// INDEKS RREZIKU: I LARTE</div>
+        <hr>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;" class="gap-sm">
+            <div>
+                <div class="prob">
+                    <div class="prob-icon">&#9888;</div>
+                    <div class="prob-body">
+                        <h4>TRAFIKU</h4>
+                        <p>Nje nga qytetet me trafik me te ngarkuar ne bote &mdash; miliona automjete cdo dite.</p>
+                    </div>
+                </div>
+                <div class="prob">
+                    <div class="prob-icon">&#9888;</div>
+                    <div class="prob-body">
+                        <h4>NDOTJA E AJRIT</h4>
+                        <p>Nder problemet me serioze &mdash; klima aride + miliona makina = smog kronik.</p>
+                    </div>
+                </div>
+                <div class="prob">
+                    <div class="prob-icon">&#9888;</div>
+                    <div class="prob-body">
+                        <h4>LAGJET E MARGJINALIZUARA</h4>
+                        <p>1/3 e popullsise urbane jeton ne periferi me kushte te dobeta jetese.</p>
+                    </div>
+                </div>
+                <div class="prob">
+                    <div class="prob-icon">&#9888;</div>
+                    <div class="prob-body">
+                        <h4>SUBURBANIZIMI</h4>
+                        <p>"Urban sprawl" &mdash; rritja e shpejte e periferive dhe degradim i qendres.</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="prob">
+                    <div class="prob-icon">&#9888;</div>
+                    <div class="prob-body">
+                        <h4>PABARAZIA SOCIALE</h4>
+                        <p>Dallim i madh veri&ndash;jug ne te ardhura dhe cilesi jetese.</p>
+                    </div>
+                </div>
+                <div class="prob">
+                    <div class="prob-icon">&#9888;</div>
+                    <div class="prob-body">
+                        <h4>PRESIONI I POPULLSISE</h4>
+                        <p>Shtimi i popullsise &mdash; presion i madh mbi strehimin, ujin, infrastrukturen.</p>
+                    </div>
+                </div>
+                <div class="prob">
+                    <div class="prob-icon">&#9888;</div>
+                    <div class="prob-body">
+                        <h4>RREZIKU SIZMIK</h4>
+                        <p>Teherani ndodhet afer zonave sismike aktive &mdash; rrezik per termete te medha.</p>
+                    </div>
+                </div>
+                <div class="img-container" style="height: 120px; margin-top: 1px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Modarres_Expressway_Tehran.jpg/800px-Modarres_Expressway_Tehran.jpg" alt="Trafiku ne Teheran" style="object-position: center 40%;">
+                    <span class="img-tag"><span class="red">///</span> TRAFIKU URBAN &mdash; TEHERAN</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================ -->
+<!-- SLIDE 09 — CONCLUSION -->
+<!-- ============================================ -->
+<section class="slide" id="s9">
+    <div class="slide-inner">
+        <div class="slide-id"><span class="num">09</span> PERFUNDIMI</div>
+        <div class="section-title">FJALET E <span class="red">FUNDIT</span></div>
+        <div class="section-sub">[ VLERESIM PERFUNDIMTAR ] /// STATUS: MEGAQYTET NE ZHVILLIM</div>
+        <hr>
+
+        <div class="conc-list gap-sm">
+            <div class="conc-item">
+                <div class="conc-num"></div>
+                <div class="conc-text">Teherani eshte nje qytet me <strong>histori mijera-vjecare</strong>, por zhvillim urban shume i shpejte vetem ne dy shekujt e fundit.</div>
+            </div>
+            <div class="conc-item">
+                <div class="conc-num"></div>
+                <div class="conc-text">Ballafaqohet me <strong>sfidat klasike te megaqyteteve</strong>: pabarazi, ndotje, trafik, strehim.</div>
+            </div>
+            <div class="conc-item">
+                <div class="conc-num"></div>
+                <div class="conc-text">Shembull i <strong>urbanizimit te pakontrolluar</strong> ne vendet ne zhvillim &mdash; rritje pa planifikim.</div>
+            </div>
+            <div class="conc-item">
+                <div class="conc-num"></div>
+                <div class="conc-text">Potencial i madh &mdash; por nevoja per <strong>planifikim urban te qendrueshem</strong> per te ardhmen.</div>
+            </div>
+        </div>
+
+        <div class="stamp">
+            <p>FALEMINDERIT PER <span style="color: var(--red);">VEMENDJEN</span></p>
+            <div class="meta" style="margin-top: 16px;">[ LUIS LEKAJ ] &nbsp; /// &nbsp; 12-1 &nbsp; /// &nbsp; 2026</div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Intersection Observer — fade in
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.slide-inner').forEach(el => obs.observe(el));
+
+    // Nav active
+    const navLinks = document.querySelectorAll('nav a');
+    const slides = document.querySelectorAll('.slide');
+    const navObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                const id = e.target.id;
+                navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+            }
+        });
+    }, { threshold: 0.4 });
+    slides.forEach(s => navObs.observe(s));
+
+    // Animated bars
+    const chartObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.querySelectorAll('.bar-fill').forEach((bar, i) => {
+                    setTimeout(() => { bar.style.width = bar.dataset.width; }, i * 120);
+                });
+                chartObs.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.3 });
+    const chart = document.getElementById('pop-chart');
+    if (chart) chartObs.observe(chart);
+</script>
+
+</body>
+</html>
